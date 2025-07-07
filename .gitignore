@@ -1,1 +1,7 @@
 /target
+.idea
+/.vscode
+/.gradle
+/.mvn
+/.DS_Store
+Cargo.lock
