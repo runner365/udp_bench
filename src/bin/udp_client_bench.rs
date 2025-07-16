@@ -158,7 +158,7 @@ async fn recv_udp_data_select(recv_client: Arc<UdpSocket>, running_clone : Arc<A
     }
 }
 
-async fn send_loop(send_client: Arc<UdpSocket>, remote_addr: SocketAddr, kbps: f32) -> Result<i64, Box<dyn Error>> {
+async fn send_loop(send_client: Arc<UdpSocket>, remote_addr: SocketAddr, kbps: f32, duration: i64) -> Result<i64, Box<dyn Error>> {
     let start_ms = get_millis_as_i64();
     let mut seq: u32 = 0;
     
@@ -171,7 +171,7 @@ async fn send_loop(send_client: Arc<UdpSocket>, remote_addr: SocketAddr, kbps: f
     let mut total : i64 = 0;
     println!("send_loop start, start_ms:{}", start_ms);
     loop {
-        if get_millis_as_i64() - start_ms > 30 * 1000 {
+        if get_millis_as_i64() - start_ms > duration * 1000 {
             break;
         }
         let ts = get_millis_as_i64() as u32;
@@ -257,10 +257,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     });
     
     let kbps = config.kbps;
+    let duration = config.duration;
     
     let sent_total_clone = sent_total.clone();
     let send_spawn = tokio::spawn(async move {
-        let _result = send_loop(send_client, target_addr, kbps).await;
+        let _result = send_loop(send_client, target_addr, kbps, duration).await;
         if let Err(e) = _result {
             eprintln!("Error in send loop: {}", e);
         } else {

@@ -9,6 +9,7 @@ pub struct ClientConfig {
     pub client_ip: String,
     pub client_port: u16,
     pub kbps: f32,
+    pub duration: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -54,6 +55,7 @@ impl ClientConfig {
         let mut client_port = 0;
         let mut kbps : f32 = 64.0;
         let mut arg_iter = args.iter();
+        let mut duration: i64 = 40;
 
         arg_iter.next();
         loop {
@@ -62,12 +64,12 @@ impl ClientConfig {
                 break;
             }
             
-            let arg = arg.ok_or("please input -l -p -c -r")?;
+            let arg = arg.ok_or("please input -l -p -c -r -d")?;
 
             match arg.as_str() {
                 "-h" => {
-                    println!("usage: -s server_ip -p server_port -c client_ip -r client_port -k kbps");
-                    return Err("please input -s -p -c -r -k");
+                    println!("usage: -s server_ip -p server_port -c client_ip -r client_port -k kbps -d duration");
+                    return Err("please input -s -p -c -r -k -d");
                 },
                 "-s" => {
                     server_ip = arg_iter.next().ok_or("please input server ip")?.clone();
@@ -105,9 +107,24 @@ impl ClientConfig {
                         },
                     };
                 },
+                "-d" => {
+                    let duration_str = arg_iter.next().ok_or("please input duration")?.clone();
+                    match duration_str.parse::<i64>() {
+                        Ok(d) => {
+                            if d <= 0 {
+                                return Err("duration must be greater than 0");
+                            }
+                            duration = d;
+                        },
+                        Err(e) => {
+                            println!("duration is error: {e}");
+                            return Err("duration is error");
+                        },
+                    };
+                },
                 _ => {
-                    println!("please input -s -p -c -r -k");
-                    return Err("please input -s -p -c -r -k");
+                    println!("please input -s -p -c -r -k -d");
+                    return Err("please input -s -p -c -r -k -d");
                 },
             }
         }
@@ -117,6 +134,7 @@ impl ClientConfig {
             server_port,
             client_ip,
             client_port,
+            duration,
             kbps,
         })
     }
