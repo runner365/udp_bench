@@ -103,7 +103,12 @@ fn handle_data(data:&[u8], avg_rtt: &mut f32, rtt_dbg_ms: &mut i64) {
     };
     
     let rtt = (now_ms - ts) as f32;
-    *avg_rtt += (rtt - *avg_rtt) / 5.0;
+    if *avg_rtt == 0.0 {
+        *avg_rtt = rtt;
+    } else {
+        *avg_rtt += (rtt - *avg_rtt) / 5.0;
+    }
+    
     if *rtt_dbg_ms == 0 {
         *rtt_dbg_ms = get_millis_as_i64();
     } else {
@@ -124,7 +129,7 @@ fn handle_data(data:&[u8], avg_rtt: &mut f32, rtt_dbg_ms: &mut i64) {
 }
 
 async fn recv_udp_data_select(recv_client: Arc<UdpSocket>, running_clone : Arc<AtomicBool>) -> Result<i64, Box<dyn Error>> {
-    let mut avg_rtt: f32 = 5.0;
+    let mut avg_rtt: f32 = 0.0;
     let mut rtt_dbg_ms: i64 = 2000;
     let mut total : i64 = 0;
 
