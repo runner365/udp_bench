@@ -79,9 +79,9 @@ impl StreamStatics {
         self.last_recv_count = self.recv_count;
 
         let recv_kbps = (duration_bytes as f32 * 8.0) / (duration_ms as f32);
-        let recv_fps = (duration_count as f32) * 1000.0 / (duration_ms as f32);
+        let recv_pps = (duration_count as f32) * 1000.0 / (duration_ms as f32);
 
-        (recv_kbps, recv_fps)
+        (recv_kbps, recv_pps)
     }
 
     pub fn get_send_statics(&mut self) -> (f32, f32) {
@@ -113,9 +113,9 @@ impl StreamStatics {
         self.last_send_count = self.send_count;
 
         let send_kbps = (duration_bytes as f32 * 8.0) / (duration_ms as f32);
-        let send_fps = (duration_count as f32) * 1000.0 / (duration_ms as f32);
+        let send_pps = (duration_count as f32) * 1000.0 / (duration_ms as f32);
 
-        (send_kbps, send_fps)
+        (send_kbps, send_pps)
     }
     pub fn reset(&mut self) {
         self.recv_bytes = 0;

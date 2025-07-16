@@ -7,6 +7,77 @@ use tokio::net::UdpSocket;
 use std::sync::atomic::{AtomicI64, AtomicBool, Ordering};
 use tokio::time::{sleep, Duration};
 use std::sync::LazyLock;
+use serde::Serialize;
+use std::fs::OpenOptions;
+use std::io::Write;
+
+#[derive(Serialize)]
+struct RttStats {
+    ts: i64,
+    rtt: f32,
+    avg_rtt: f32,
+    seq: u32,
+}
+
+#[derive(Serialize)]
+struct TotalStats {
+    sent: i64,
+    received: i64,
+    lost: i64,
+    lost_percent: f32,
+}
+
+fn total_stats_to_json(
+    sent: i64,
+    received: i64,
+    lost: i64,
+    lost_percent: f32,
+    filename: &str,
+) -> Result<(), Box<dyn Error>> {
+    let stats = TotalStats {
+        sent,
+        received,
+        lost,
+        lost_percent,
+    };
+
+    let json_str = serde_json::to_string(&stats)?;
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(filename)?;
+
+    writeln!(file, "{}", json_str)?;
+
+    Ok(())
+}
+
+fn append_rtt_stats_to_json(
+    ts: i64,
+    rtt: f32,
+    avg_rtt: f32,
+    seq: u32,
+    filename: &str,
+) -> Result<(), Box<dyn Error>> {
+    let stats = RttStats {
+        ts,
+        rtt,
+        avg_rtt,
+        seq,
+    };
+
+    let json_str = serde_json::to_string(&stats)?;
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(filename)?;
+
+    writeln!(file, "{}", json_str)?;
+
+    Ok(())
+}
 
 static RUNNING: LazyLock<Arc<AtomicBool>> = LazyLock::new(|| {
     Arc::new(AtomicBool::new(true))
@@ -40,6 +111,13 @@ fn handle_data(data:&[u8], avg_rtt: &mut f32, rtt_dbg_ms: &mut i64) {
         if now_ms - *rtt_dbg_ms > 2*1000 {
             *rtt_dbg_ms = now_ms;
             println!("response rtt:{} seq:{}, ts:{}, avg_rtt:{}", rtt, seq, ts as u32, avg_rtt);
+            append_rtt_stats_to_json(
+                now_ms,
+                rtt,
+                *avg_rtt,
+                seq,
+                "rtt_stats.json"
+            ).expect("Failed to append RTT stats to JSON");
         }
     }
 
@@ -222,5 +300,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         0.0
     };
     println!("Total lost: {}, Lost percent: {:.2}%", lost_count, lost_percent);
+
+    total_stats_to_json(
+        sent_count,
+        recv_count,
+        lost_count,
+        lost_percent,
+        "total_stats.json"
+    ).expect("Failed to write total stats to JSON");
     Ok(())
 }

@@ -52,6 +52,6 @@ recv loop finished, total:368
 recv spawn finished successfully, total received: 368
 ```
 结果的日志包含信息:
-* 发送kbps，fps和总数
+* 发送kbps，pps和总数
 * 实时rtt和平均rtt
 * 丢包数，丢包率

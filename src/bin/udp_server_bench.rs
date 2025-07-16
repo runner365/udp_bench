@@ -46,11 +46,11 @@ impl UdpEchoServer {
 
             if now_ms - last_ms >= 3*1000 {
                 last_ms = now_ms;
-                let (recv_kbps, recv_fps) = self.statics.get_recv_statics();
-                let (send_kbps, send_fps) = self.statics.get_send_statics();
-                println!("Recv: {} kbps, {} fps | Send: {} kbps, {} fps",
-                    recv_kbps, recv_fps, send_kbps, send_fps);
-            }   
+                let (recv_kbps, recv_pps) = self.statics.get_recv_statics();
+                let (send_kbps, send_pps) = self.statics.get_send_statics();
+                println!("Recv: {} kbps, {} pps | Send: {} kbps, {} pps",
+                    recv_kbps, recv_pps, send_kbps, send_pps);
+            }
         }
     }
 }
