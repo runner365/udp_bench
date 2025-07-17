@@ -169,7 +169,7 @@ async fn send_loop(send_client: Arc<UdpSocket>, remote_addr: SocketAddr, kbps: f
     
     let mut last_dbg_ms = start_ms;
     
-    const SEND_INTERVAL : i64 = 200;
+    const SEND_INTERVAL : i64 = 30;
     let mut total_bytes: f32 = 0.0;
     let mut last_total_bytes: f32 = 0.0;
     let mut bytes_buffer_len: f32 = 10.0*1024.0;
